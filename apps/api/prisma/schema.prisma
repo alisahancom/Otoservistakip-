@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Organization {
+  id String @id @default(uuid())
+  name String
+  branches Branch[]
+  users User[]
+  customers Customer[]
+  vehicles Vehicle[]
+}
+model Branch {
+  id String @id @default(uuid())
+  organizationId String
+  name String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  orders WorkOrder[]
+  users User[]
+  @@index([organizationId])
+}
+model User {
+  id String @id @default(uuid())
+  organizationId String
+  branchId String?
+  email String @unique
+  passwordHash String
+  role Role @default(ADVISOR)
+  organization Organization @relation(fields: [organizationId], references: [id])
+  branch Branch? @relation(fields: [branchId], references: [id])
+}
+enum Role { OWNER MANAGER ADVISOR TECHNICIAN CASHIER }
+model Customer {
+  id String @id @default(uuid())
+  organizationId String
+  name String
+  phone String?
+  email String?
+  organization Organization @relation(fields: [organizationId], references: [id])
+  ownerships VehicleOwnership[]
+  orders WorkOrder[]
+  createdAt DateTime @default(now())
+  @@index([organizationId, name])
+}
+model Vehicle {
+  id String @id @default(uuid())
+  organizationId String
+  vin String?
+  make String
+  model String
+  modelYear Int?
+  organization Organization @relation(fields: [organizationId], references: [id])
+  plates VehiclePlate[]
+  ownerships VehicleOwnership[]
+  orders WorkOrder[]
+  mileageLogs MileageLog[]
+  @@index([organizationId, vin])
+}
+model VehiclePlate {
+  id String @id @default(uuid())
+  vehicleId String
+  normalizedPlate String
+  validFrom DateTime @default(now())
+  validTo DateTime?
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  @@index([normalizedPlate, validTo])
+}
+model VehicleOwnership {
+  id String @id @default(uuid())
+  vehicleId String
+  customerId String
+  startAt DateTime @default(now())
+  endAt DateTime?
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+model MileageLog {
+  id String @id @default(uuid())
+  vehicleId String
+  km Int
+  recordedAt DateTime @default(now())
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+}
+enum WorkOrderStatus { OPEN QUOTED APPROVED IN_PROGRESS QUALITY_CHECK READY DELIVERED CANCELLED }
+model WorkOrder {
+  id String @id @default(uuid())
+  branchId String
+  vehicleId String
+  customerId String
+  complaint String
+  status WorkOrderStatus @default(OPEN)
+  createdAt DateTime @default(now())
+  branch Branch @relation(fields: [branchId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  items WorkOrderItem[]
+  @@index([branchId, status, createdAt])
+}
+model WorkOrderItem {
+  id String @id @default(uuid())
+  workOrderId String
+  description String
+  laborAmount Decimal @db.Decimal(12,2)
+  partsAmount Decimal @db.Decimal(12,2)
+  approved Boolean @default(false)
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id])
+}
