@@ -1,26 +1,36 @@
-# OtoServisTakip
+# OtoServisTakip 2026
 
-2026 standartlarında web, Android ve iOS için modern oto servis yönetim platformu.
+Web, Android ve iOS için modern oto servis yönetim platformu. **Durum: geliştirme başlangıç sürümü; üretime hazır değildir.**
 
-## Vizyon
-Plaka okut → araç/müşteri geçmişini getir → iş emri aç → kontrol/teklif/onay → teknisyen/servis → kalite kontrol → tahsilat/teslim → bakım hatırlatması.
+## Monorepo
+- `apps/web` — Next.js + React + TypeScript başlangıç dashboard'u, plaka sorgu ekranı
+- `apps/mobile` — React Native + Expo başlangıç ekranı
+- `apps/api` — NestJS + Prisma API, `GET /health` ve JWT korumalı `GET /vehicles/by-plate?plate=...`
+- `apps/api/prisma/schema.prisma` — organization, branch, user, customer, vehicle, plate history, work order ve ilişkiler
+- `docs/` — mimari, master prompt, yol haritası ve UI/UX
 
-## Teknoloji
-- Monorepo: pnpm + Turborepo
-- Web: Next.js + React + TypeScript + Tailwind CSS + shadcn/ui
-- Mobil: React Native + Expo
-- API: NestJS + Prisma + PostgreSQL
-- Redis + BullMQ, WebSocket, S3 uyumlu dosya depolama
-- Zod, OpenAPI, Docker, GitHub Actions
+## Yerel kurulum
+Node.js 22, pnpm 9 ve Docker gereklidir.
 
-## Başlangıç
-1. [AGENTS.md](AGENTS.md) — Codex için bağlayıcı geliştirme kuralları
-2. [docs/MASTER_PROMPT.md](docs/MASTER_PROMPT.md) — kapsamlı geliştirme talimatı
-3. [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) — fazlar ve kabul kriterleri
-4. [docs/DATA_MODEL.md](docs/DATA_MODEL.md) — veri modeli
-5. [docs/UI_UX.md](docs/UI_UX.md) — web/mobil ekran tasarımı
+```bash
+git clone https://github.com/alisahancom/Otoservistakip-.git
+cd Otoservistakip-
+cp .env.example .env
+docker compose up -d
+pnpm install
+pnpm db:generate
+pnpm db:migrate
+pnpm dev
+```
 
-> Durum: Planlama aşaması. Henüz çalışan uygulama, OCR veya gerçek entegrasyon yoktur. Demo verileri gerçek müşteri bilgisi olarak kullanılmamalıdır.
+**Önemli:** `.env` değişkenlerini uygulama süreçlerinin okuyacağı şekilde yapılandırın (örneğin `apps/api/.env` ve `apps/web/.env.local`). `JWT_SECRET` değerini güvenli rastgele anahtarla değiştirin. İlk kurulumda kullanıcı oluşturma/giriş akışı henüz yoktur; plaka sorgulama ekranı geçerli JWT olmadan veri göstermez. Mobil cihazda `localhost` yerine bilgisayarın LAN adresi kullanılmalıdır.
 
-## İlk hedef
-Plaka sorgusundan araç teslimine kadar uçtan uca çalışan, testli MVP. Harici entegrasyonlar adapter arayüzü ve mock ile başlar; gerçek entegrasyon ayrıca doğrulanır.
+## Sınırlar
+- OCR kamera okuma, müşteri kayıt ekranları, teklif/onay, stok, ödeme ve tam iş emri iş akışı **henüz uygulanmadı**.
+- Oturum açma ve kullanıcı yönetimi **henüz uygulanmadı**; JWT doğrulama iskeleti vardır. Gerçek kullanıma açılmamalıdır.
+- Migration dosyaları ilk `pnpm db:migrate` çalıştırıldığında üretilecektir.
+- CI build/typecheck çalıştıracak şekilde tanımlandı; bu commitlerin test/build sonuçları burada doğrulanmamıştır.
+- Gerçek müşteri verilerini örnek/seed olarak commit etmeyin.
+
+## Codex belgeleri
+[AGENTS.md](AGENTS.md) · [Ana prompt](docs/MASTER_PROMPT.md) · [Yol haritası](docs/PROJECT_PLAN.md) · [Veri modeli](docs/DATA_MODEL.md) · [UI/UX](docs/UI_UX.md)
