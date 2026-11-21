@@ -1,0 +1,1 @@
+{"name":"otoservistakip","private":true,"packageManager":"pnpm@9.15.9","scripts":{"dev":"turbo dev","build":"turbo build","lint":"turbo lint","typecheck":"turbo typecheck","db:generate":"pnpm --filter @otoservis/api prisma:generate","db:migrate":"pnpm --filter @otoservis/api prisma:migrate"},"devDependencies":{"turbo":"^2.4.0","typescript":"^5.7.3"}}
